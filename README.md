@@ -1,4 +1,8 @@
-# CharDataset
+<div align="center">
+
+# Chars-Dataset
+
+</div>
 
 A linguistic dataset of English-language novels in CoNLL-U format, converted to JSON and CSV with character annotations.
 
