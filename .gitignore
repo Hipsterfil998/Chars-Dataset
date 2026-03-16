@@ -1,0 +1,6 @@
+dataset.json
+dataset.csv
+drive-download-20260307T110206Z-3-001.zip
+__pycache__/
+**/__pycache__/
+*.pyc

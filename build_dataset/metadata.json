@@ -1,0 +1,19 @@
+{
+  "authors": {
+    "WOOLF":  "Virginia Woolf",
+    "WALKER": "Alice Walker"
+  },
+  "overrides": {
+    "WALKER_THETHIRDLIFEOFGRANGECOPELAND": { "titolo_libro": "The Third Life of Grange Copeland", "anno": 1970 },
+    "WOOLF_BETWEENTHEACTS":                { "titolo_libro": "Between the Acts",                  "anno": 1941 },
+    "WOOLF_JACOBSROOM":                    { "titolo_libro": "Jacob's Room",                      "anno": 1922 },
+    "WOOLF_MRSDALLOWAY":                   { "titolo_libro": "Mrs Dalloway",                      "anno": 1925 },
+    "WOOLF_NIGHTANDDAY":                   { "titolo_libro": "Night and Day",                     "anno": 1919 },
+    "WOOLF_ORLANDOABIOGRAPHY":             { "titolo_libro": "Orlando: A Biography",              "anno": 1928 },
+    "WOOLF_THELADYINTHELOOKINGGLASS":      { "titolo_libro": "The Lady in the Looking Glass",     "anno": 1929 },
+    "WOOLF_THEVOYAGEOUT":                  { "titolo_libro": "The Voyage Out",                    "anno": 1915 },
+    "WOOLF_THEWAVES":                      { "titolo_libro": "The Waves",                         "anno": 1931 },
+    "WOOLF_THEYEARS":                      { "titolo_libro": "The Years",                         "anno": 1937 },
+    "WOOLF_TOTHELIGHTHOUSE":               { "titolo_libro": "To the Lighthouse",                 "anno": 1927 }
+  }
+}
