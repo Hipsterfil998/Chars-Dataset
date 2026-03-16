@@ -7,15 +7,15 @@ class ConlluParser:
     def parse(self, text: str) -> list[Sentence]:
         sentences: list[Sentence] = []
         current_tokens: list[Token] = []
-        frase_id = 1
+        sentence_id = 1
 
         for line in text.splitlines():
             line = line.strip()
             if not line:
                 if current_tokens:
-                    sentences.append(Sentence(frase_id, current_tokens))
+                    sentences.append(Sentence(sentence_id, current_tokens))
                     current_tokens = []
-                    frase_id += 1
+                    sentence_id += 1
             elif line.startswith("#"):
                 continue
             else:
@@ -24,7 +24,7 @@ class ConlluParser:
                     current_tokens.append(tok)
 
         if current_tokens:
-            sentences.append(Sentence(frase_id, current_tokens))
+            sentences.append(Sentence(sentence_id, current_tokens))
         return sentences
 
     def _parse_line(self, line: str) -> Token | None:
@@ -33,7 +33,7 @@ class ConlluParser:
             return None
         start, end = self._parse_misc(fields[9])
         return Token(
-            id_token=int(fields[0]),
+            token_id=int(fields[0]),
             form=fields[1],
             lemma=fields[2],
             upos=fields[3],

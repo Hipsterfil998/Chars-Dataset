@@ -2,8 +2,6 @@
 
 A linguistic dataset of English-language novels in CoNLL-U format, converted to JSON and CSV with character annotations.
 
-**Statistics:** 11 books · 60,028 sentences · 1,195,013 tokens
-
 ---
 
 ## Project structure
@@ -43,37 +41,37 @@ Hierarchical structure: **books → sentences → tokens**.
 
 ```json
 {
-  "libri": [
+  "books": [
     {
-      "id_libro":     1,
-      "titolo_libro": "Mrs Dalloway",
-      "autore":       "Virginia Woolf",
-      "anno":         1925,
-      "n_frasi":      3533,
-      "n_token":      78450,
-      "personaggi": [
+      "book_id":     1,
+      "title":       "Mrs Dalloway",
+      "author":      "Virginia Woolf",
+      "year":        1925,
+      "n_sentences": 3533,
+      "n_tokens":    78450,
+      "characters": [
         {
-          "nome":       "Clarissa",
-          "occorrenze": 156,
-          "ruoli":      { "nsubj": 45, "obj": 12 }
+          "name":        "Clarissa",
+          "occurrences": 156,
+          "roles":       { "nsubj": 45, "obj": 12 }
         }
       ],
-      "frasi": [
+      "sentences": [
         {
-          "id_frase": 1,
+          "sentence_id": 1,
           "token": [
             {
-              "id_token":    1,
-              "form":        "Mrs.",
-              "lemma":       "Mrs.",
-              "upos":        "PROPN",
-              "xpos":        "NNP",
-              "feats":       "Number=Sing",
-              "head":        13,
-              "deprel":      "nsubj",
-              "start_char":  0,
-              "end_char":    4,
-              "personaggio": null
+              "token_id":   1,
+              "form":       "Mrs.",
+              "lemma":      "Mrs.",
+              "upos":       "PROPN",
+              "xpos":       "NNP",
+              "feats":      "Number=Sing",
+              "head":       13,
+              "deprel":     "nsubj",
+              "start_char": 0,
+              "end_char":   4,
+              "character":  null
             }
           ]
         }
@@ -87,7 +85,7 @@ Hierarchical structure: **books → sentences → tokens**.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `id_token` | int | Token index within the sentence (starting from 1) |
+| `token_id` | int | Token index within the sentence (starting from 1) |
 | `form` | str | Original token form |
 | `lemma` | str | Lemma |
 | `upos` | str | Universal POS tag (UD tagset) |
@@ -97,7 +95,7 @@ Hierarchical structure: **books → sentences → tokens**.
 | `deprel` | str | Dependency relation |
 | `start_char` | int\|null | Start character offset in the original text |
 | `end_char` | int\|null | End character offset in the original text |
-| `personaggio` | str\|null | Canonical character name, if the token belongs to a recognised span |
+| `character` | str\|null | Canonical character name, if the token belongs to a recognised span |
 
 ### dataset.csv
 
@@ -105,14 +103,14 @@ One row per sentence, flattened from the JSON.
 
 | Column | Description |
 |--------|-------------|
-| `id_libro` | Numeric book identifier |
-| `titolo_libro` | Novel title |
-| `autore` | Author name |
-| `anno` | Publication year |
-| `id_frase` | Sentence identifier within the book |
-| `testo` | Reconstructed sentence text (tokens joined by space) |
-| `n_token` | Number of tokens in the sentence |
-| `personaggi` | Characters mentioned in the sentence, separated by `;` |
+| `book_id` | Numeric book identifier |
+| `title` | Novel title |
+| `author` | Author name |
+| `year` | Publication year |
+| `sentence_id` | Sentence identifier within the book |
+| `text` | Reconstructed sentence text (tokens joined by space) |
+| `n_tokens` | Number of tokens in the sentence |
+| `characters` | Characters mentioned in the sentence, separated by `;` |
 
 ---
 
@@ -121,11 +119,11 @@ One row per sentence, flattened from the JSON.
 Characters are identified automatically as **spans of consecutive `PROPN` tokens** with at least 3 occurrences in the text. The top 30 most frequent characters are selected per book.
 
 For each character the following are recorded:
-- **nome** — canonical form (the most frequent form in the text)
-- **occorrenze** — total number of mentions
-- **ruoli** — distribution of syntactic roles (`nsubj`, `obj`, `nmod`, …)
+- **name** — canonical form (the most frequent form in the text)
+- **occurrences** — total number of mentions
+- **roles** — distribution of syntactic roles (`nsubj`, `obj`, `nmod`, …)
 
-Every token belonging to a recognised character span receives the `personaggio` field with the canonical name.
+Every token belonging to a recognised character span receives the `character` field with the canonical name.
 
 ---
 
@@ -138,7 +136,7 @@ Every token belonging to a recognised character span receives the `personaggio` 
    ```
 3. If the auto-generated title is wrong, add an entry in `OVERRIDES`:
    ```python
-   OVERRIDES["SURNAME_TITLERAW"] = {"titolo_libro": "Correct Title", "anno": 1950}
+   OVERRIDES["SURNAME_TITLERAW"] = {"title": "Correct Title", "year": 1950}
    ```
 4. Re-run `python3 main.py`.
 

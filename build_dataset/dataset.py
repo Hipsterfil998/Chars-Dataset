@@ -23,13 +23,13 @@ class Dataset:
         with zipfile.ZipFile(self.zip_path) as zf:
             files = sorted(n for n in zf.namelist() if n.endswith(".conllu"))
             print(f"CoNLL-U files found: {len(files)}\n")
-            for libro_id, fname in enumerate(files, start=1):
-                self.books.append(self._build_book(zf, fname, libro_id))
+            for book_id, fname in enumerate(files, start=1):
+                self.books.append(self._build_book(zf, fname, book_id))
 
     def save_json(self, path: Path) -> None:
         print(f"Saving {path.name} ...", end=" ", flush=True)
         with open(path, "w", encoding="utf-8") as fp:
-            json.dump({"libri": [b.to_dict() for b in self.books]}, fp,
+            json.dump({"books": [b.to_dict() for b in self.books]}, fp,
                       ensure_ascii=False, indent=2)
         print(f"OK  ({path.stat().st_size / 1_048_576:.1f} MB)")
 
@@ -64,9 +64,9 @@ class Dataset:
         for key, corrections in overrides.items():
             surname, _, title_raw = key.partition("_")
             entry = {
-                "autore":       authors.get(surname, surname.title()),
-                "titolo_libro": title_raw.title(),
-                "anno":         None,
+                "author": authors.get(surname, surname.title()),
+                "title":  title_raw.title(),
+                "year":   None,
             }
             entry.update(corrections)
             metadata[key] = entry
@@ -80,37 +80,37 @@ class Dataset:
             authors = json.load(fp).get("authors", {})
         surname, _, title_raw = key.partition("_")
         return {
-            "autore":       authors.get(surname, surname.title()),
-            "titolo_libro": title_raw.title(),
-            "anno":         None,
+            "author": authors.get(surname, surname.title()),
+            "title":  title_raw.title(),
+            "year":   None,
         }
 
-    def _build_book(self, zf: zipfile.ZipFile, fname: str, libro_id: int) -> Book:
+    def _build_book(self, zf: zipfile.ZipFile, fname: str, book_id: int) -> Book:
         key  = fname.replace(".conllu", "")
         meta = self._resolve_meta(key)
 
-        print(f"  {meta['titolo_libro']:<40}", end=" ", flush=True)
+        print(f"  {meta['title']:<40}", end=" ", flush=True)
         with zf.open(fname) as f:
             text = f.read().decode("utf-8")
 
         sentences  = self._parser.parse(text)
-        personaggi = self._extractor.extract(sentences)
-        self._extractor.annotate(sentences, personaggi)
+        characters = self._extractor.extract(sentences)
+        self._extractor.annotate(sentences, characters)
 
-        book = Book(libro_id, meta["titolo_libro"], meta["autore"], meta["anno"],
-                    personaggi, sentences)
-        print(f"{book.n_frasi:>6,} sentences  {book.n_token:>8,} tokens  {len(personaggi):>3} characters")
+        book = Book(book_id, meta["title"], meta["author"], meta["year"],
+                    characters, sentences)
+        print(f"{book.n_sentences:>6,} sentences  {book.n_tokens:>8,} tokens  {len(characters):>3} characters")
         return book
 
     @staticmethod
     def _book_to_csv_rows(book: Book):
-        ctx = {"id_libro": book.id_libro, "titolo_libro": book.titolo_libro,
-               "autore": book.autore, "anno": book.anno}
-        for sent in book.frasi:
+        ctx = {"book_id": book.book_id, "title": book.title,
+               "author": book.author, "year": book.year}
+        for sent in book.sentences:
             yield {
                 **ctx,
-                "id_frase":   sent.id_frase,
-                "testo":      sent.testo,
-                "n_token":    len(sent.token),
-                "personaggi": ";".join(sent.personaggi_presenti),
+                "sentence_id": sent.sentence_id,
+                "text":        sent.text,
+                "n_tokens":    len(sent.token),
+                "characters":  ";".join(sent.characters_present),
             }

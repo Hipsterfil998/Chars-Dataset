@@ -3,7 +3,7 @@ from dataclasses import asdict, dataclass, field
 
 @dataclass
 class Token:
-    id_token:    int
+    token_id:    int
     form:        str
     lemma:       str
     upos:        str
@@ -13,59 +13,59 @@ class Token:
     deprel:      str
     start_char:  int | None
     end_char:    int | None
-    personaggio: str | None = None
+    character:   str | None = None
 
 
 @dataclass
 class Sentence:
-    id_frase: int
-    token:    list[Token] = field(default_factory=list)
+    sentence_id: int
+    token:       list[Token] = field(default_factory=list)
 
     @property
-    def testo(self) -> str:
+    def text(self) -> str:
         return " ".join(t.form for t in self.token)
 
     @property
-    def personaggi_presenti(self) -> list[str]:
+    def characters_present(self) -> list[str]:
         """Unique characters mentioned in the sentence, in order of appearance."""
-        return list(dict.fromkeys(t.personaggio for t in self.token if t.personaggio))
+        return list(dict.fromkeys(t.character for t in self.token if t.character))
 
 
 @dataclass
-class Personaggio:
-    nome:       str
-    occorrenze: int
-    ruoli:      dict[str, int]
+class Character:
+    name:        str
+    occurrences: int
+    roles:       dict[str, int]
 
 
 @dataclass
 class Book:
-    id_libro:     int
-    titolo_libro: str
-    autore:       str
-    anno:         int | None
-    personaggi:   list[Personaggio] = field(default_factory=list)
-    frasi:        list[Sentence]    = field(default_factory=list)
+    book_id:    int
+    title:      str
+    author:     str
+    year:       int | None
+    characters: list[Character] = field(default_factory=list)
+    sentences:  list[Sentence]  = field(default_factory=list)
 
     @property
-    def n_frasi(self) -> int:
-        return len(self.frasi)
+    def n_sentences(self) -> int:
+        return len(self.sentences)
 
     @property
-    def n_token(self) -> int:
-        return sum(len(s.token) for s in self.frasi)
+    def n_tokens(self) -> int:
+        return sum(len(s.token) for s in self.sentences)
 
     def to_dict(self) -> dict:
         return {
-            "id_libro":     self.id_libro,
-            "titolo_libro": self.titolo_libro,
-            "autore":       self.autore,
-            "anno":         self.anno,
-            "n_frasi":      self.n_frasi,
-            "n_token":      self.n_token,
-            "personaggi":   [asdict(p) for p in self.personaggi],
-            "frasi": [
-                {"id_frase": s.id_frase, "token": [asdict(t) for t in s.token]}
-                for s in self.frasi
+            "book_id":    self.book_id,
+            "title":      self.title,
+            "author":     self.author,
+            "year":       self.year,
+            "n_sentences": self.n_sentences,
+            "n_tokens":   self.n_tokens,
+            "characters": [asdict(c) for c in self.characters],
+            "sentences": [
+                {"sentence_id": s.sentence_id, "token": [asdict(t) for t in s.token]}
+                for s in self.sentences
             ],
         }

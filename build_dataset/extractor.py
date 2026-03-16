@@ -1,6 +1,6 @@
 from collections import Counter, defaultdict
 
-from .models import Personaggio, Sentence, Token
+from .models import Character, Sentence, Token
 
 
 class CharacterExtractor:
@@ -10,7 +10,7 @@ class CharacterExtractor:
         self.top_n    = top_n
         self.min_freq = min_freq
 
-    def extract(self, sentences: list[Sentence]) -> list[Personaggio]:
+    def extract(self, sentences: list[Sentence]) -> list[Character]:
         info: dict[str, dict] = defaultdict(
             lambda: {"count": 0, "roles": Counter(), "forms": Counter()}
         )
@@ -27,17 +27,17 @@ class CharacterExtractor:
         )[:self.top_n]
 
         return [
-            Personaggio(
-                nome=v["forms"].most_common(1)[0][0],
-                occorrenze=v["count"],
-                ruoli=dict(v["roles"].most_common()),
+            Character(
+                name=v["forms"].most_common(1)[0][0],
+                occurrences=v["count"],
+                roles=dict(v["roles"].most_common()),
             )
             for _, v in top
         ]
 
-    def annotate(self, sentences: list[Sentence], personaggi: list[Personaggio]) -> None:
-        """Sets Token.personaggio in-place for every token belonging to a known character."""
-        name_map = {p.nome.lower(): p.nome for p in personaggi}
+    def annotate(self, sentences: list[Sentence], characters: list[Character]) -> None:
+        """Sets Token.character in-place for every token belonging to a known character."""
+        name_map = {c.name.lower(): c.name for c in characters}
         for sent in sentences:
             i = 0
             while i < len(sent.token):
@@ -46,7 +46,7 @@ class CharacterExtractor:
                     norm = " ".join(t.form for t in span_tokens).lower()
                     if norm in name_map:
                         for tok in span_tokens:
-                            tok.personaggio = name_map[norm]
+                            tok.character = name_map[norm]
                     i = j
                 else:
                     i += 1
