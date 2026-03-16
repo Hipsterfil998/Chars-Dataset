@@ -2,7 +2,7 @@ from .models import Sentence, Token
 
 
 class ConlluParser:
-    """Converte testo CoNLL-U in lista di Sentence."""
+    """Converts CoNLL-U text into a list of Sentence objects."""
 
     def parse(self, text: str) -> list[Sentence]:
         sentences: list[Sentence] = []

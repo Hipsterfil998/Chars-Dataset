@@ -10,7 +10,7 @@ from .parser import ConlluParser
 
 
 class Dataset:
-    """Costruisce il dataset da zip e lo esporta in JSON e CSV."""
+    """Builds the dataset from a zip archive and exports it to JSON and CSV."""
 
     def __init__(self, zip_path: Path):
         self.zip_path   = zip_path
@@ -22,19 +22,19 @@ class Dataset:
     def build(self) -> None:
         with zipfile.ZipFile(self.zip_path) as zf:
             files = sorted(n for n in zf.namelist() if n.endswith(".conllu"))
-            print(f"File CoNLL-U trovati: {len(files)}\n")
+            print(f"CoNLL-U files found: {len(files)}\n")
             for libro_id, fname in enumerate(files, start=1):
                 self.books.append(self._build_book(zf, fname, libro_id))
 
     def save_json(self, path: Path) -> None:
-        print(f"Salvataggio {path.name} ...", end=" ", flush=True)
+        print(f"Saving {path.name} ...", end=" ", flush=True)
         with open(path, "w", encoding="utf-8") as fp:
             json.dump({"libri": [b.to_dict() for b in self.books]}, fp,
                       ensure_ascii=False, indent=2)
         print(f"OK  ({path.stat().st_size / 1_048_576:.1f} MB)")
 
     def save_csv(self, path: Path) -> None:
-        print(f"Salvataggio {path.name}  ...", end=" ", flush=True)
+        print(f"Saving {path.name}  ...", end=" ", flush=True)
         with open(path, "w", encoding="utf-8", newline="") as fp:
             writer = csv.DictWriter(fp, fieldnames=CSV_FIELDS)
             writer.writeheader()
@@ -43,23 +43,23 @@ class Dataset:
                     writer.writerow(row)
         print(f"OK  ({path.stat().st_size / 1_048_576:.1f} MB)")
 
-    # ── privati ───────────────────────────────────────────────────────────────
+    # ── private ───────────────────────────────────────────────────────────────
 
     @staticmethod
     def _load_metadata() -> dict[str, dict]:
         """
-        Legge metadata.json e costruisce un dict chiave→{titolo, autore, anno}.
-        Per ogni chiave non presente in overrides usa il fallback automatico
-        (autore da authors, titolo dal nome file in title case).
-        Chiamato a runtime così riflette sempre il metadata.json corrente.
+        Reads metadata.json and builds a key→{title, author, year} dict.
+        For keys not present in overrides, an automatic fallback is used
+        (author from authors, title derived from the filename in title case).
+        Called at runtime so it always reflects the current metadata.json.
         """
         with open(METADATA_PATH, encoding="utf-8") as fp:
             raw = json.load(fp)
         authors   = raw.get("authors", {})
         overrides = raw.get("overrides", {})
 
-        # Costruisce voci per tutte le chiavi presenti negli overrides
-        # (le chiavi non in overrides vengono generate on-the-fly in _build_book)
+        # Build entries for all keys present in overrides
+        # (keys not in overrides are generated on-the-fly in _build_book)
         metadata: dict[str, dict] = {}
         for key, corrections in overrides.items():
             surname, _, title_raw = key.partition("_")
@@ -73,7 +73,7 @@ class Dataset:
         return metadata
 
     def _resolve_meta(self, key: str) -> dict:
-        """Restituisce i metadata per una chiave, generando il fallback se assente."""
+        """Returns metadata for a key, generating a fallback if not present."""
         if key in self._metadata:
             return self._metadata[key]
         with open(METADATA_PATH, encoding="utf-8") as fp:
@@ -99,7 +99,7 @@ class Dataset:
 
         book = Book(libro_id, meta["titolo_libro"], meta["autore"], meta["anno"],
                     personaggi, sentences)
-        print(f"{book.n_frasi:>6,} frasi  {book.n_token:>8,} token  {len(personaggi):>3} personaggi")
+        print(f"{book.n_frasi:>6,} sentences  {book.n_token:>8,} tokens  {len(personaggi):>3} characters")
         return book
 
     @staticmethod

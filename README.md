@@ -1,61 +1,45 @@
 # CharDataset
 
-Dataset linguistico di romanzi in lingua inglese in formato CoNLL-U, convertito in JSON e CSV con annotazioni di personaggi.
+A linguistic dataset of English-language novels in CoNLL-U format, converted to JSON and CSV with character annotations.
 
-## Contenuto del dataset
-
-| # | Titolo | Autore | Anno |
-|---|--------|--------|------|
-| 1 | The Third Life of Grange Copeland | Alice Walker | 1970 |
-| 2 | Between the Acts | Virginia Woolf | 1941 |
-| 3 | Jacob's Room | Virginia Woolf | 1922 |
-| 4 | Mrs Dalloway | Virginia Woolf | 1925 |
-| 5 | Night and Day | Virginia Woolf | 1919 |
-| 6 | Orlando: A Biography | Virginia Woolf | 1928 |
-| 7 | The Lady in the Looking Glass | Virginia Woolf | 1929 |
-| 8 | The Voyage Out | Virginia Woolf | 1915 |
-| 9 | The Waves | Virginia Woolf | 1931 |
-| 10 | The Years | Virginia Woolf | 1937 |
-| 11 | To the Lighthouse | Virginia Woolf | 1927 |
-
-**Statistiche:** 11 libri · 60.028 frasi · 1.195.013 token
+**Statistics:** 11 books · 60,028 sentences · 1,195,013 tokens
 
 ---
 
-## Struttura del progetto
+## Project structure
 
 ```
 charsdataset/
 ├── main.py                     # Entrypoint
-├── build_dataset/              # Package di costruzione
+├── build_dataset/              # Build package
 │   ├── __init__.py
-│   ├── config.py               # Percorsi, lookup autori, correzioni titoli
-│   ├── models.py               # Dataclass: Token, Sentence, Personaggio, Book
+│   ├── config.py               # Paths, author lookup, title overrides
+│   ├── models.py               # Dataclasses: Token, Sentence, Character, Book
 │   ├── parser.py               # ConlluParser
 │   ├── extractor.py            # CharacterExtractor
 │   └── dataset.py              # Dataset (build + export)
-├── dataset.json                # Output: struttura gerarchica (~438 MB)
-├── dataset.csv                 # Output: una riga per frase (~8 MB)
-└── drive-download-*.zip        # Sorgente: file CoNLL-U compressi
+├── dataset.json                # Output: hierarchical structure (~438 MB)
+├── dataset.csv                 # Output: one row per sentence (~8 MB)
+└── drive-download-*.zip        # Source: compressed CoNLL-U files
 ```
 
 ---
 
-## Utilizzo
+## Usage
 
 ```bash
 python3 main.py
 ```
 
-Produce `dataset.json` e `dataset.csv` nella directory corrente.
+Produces `dataset.json` and `dataset.csv` in the current directory.
 
 ---
 
-## Formato dei dati
+## Data format
 
 ### dataset.json
 
-Struttura gerarchica: **libri → frasi → token**.
+Hierarchical structure: **books → sentences → tokens**.
 
 ```json
 {
@@ -99,73 +83,73 @@ Struttura gerarchica: **libri → frasi → token**.
 }
 ```
 
-#### Campi token
+#### Token fields
 
-| Campo | Tipo | Descrizione |
+| Field | Type | Description |
 |-------|------|-------------|
-| `id_token` | int | Indice del token nella frase (da 1) |
-| `form` | str | Forma originale del token |
+| `id_token` | int | Token index within the sentence (starting from 1) |
+| `form` | str | Original token form |
 | `lemma` | str | Lemma |
-| `upos` | str | POS universale (UD tagset) |
-| `xpos` | str | POS Penn Treebank |
-| `feats` | str | Tratti morfologici (`"Key=Val\|Key=Val"`) |
-| `head` | int | Indice del token testa (dipendenza sintattica) |
-| `deprel` | str | Relazione di dipendenza |
-| `start_char` | int\|null | Offset carattere iniziale nel testo originale |
-| `end_char` | int\|null | Offset carattere finale nel testo originale |
-| `personaggio` | str\|null | Nome canonico del personaggio, se il token appartiene a uno span riconosciuto |
+| `upos` | str | Universal POS tag (UD tagset) |
+| `xpos` | str | Penn Treebank POS tag |
+| `feats` | str | Morphological features (`"Key=Val\|Key=Val"`) |
+| `head` | int | Head token index (syntactic dependency) |
+| `deprel` | str | Dependency relation |
+| `start_char` | int\|null | Start character offset in the original text |
+| `end_char` | int\|null | End character offset in the original text |
+| `personaggio` | str\|null | Canonical character name, if the token belongs to a recognised span |
 
 ### dataset.csv
 
-Una riga per frase, appiattimento del JSON.
+One row per sentence, flattened from the JSON.
 
-| Colonna | Descrizione |
-|---------|-------------|
-| `id_libro` | Identificatore numerico del libro |
-| `titolo_libro` | Titolo del romanzo |
-| `autore` | Nome dell'autore |
-| `anno` | Anno di pubblicazione |
-| `id_frase` | Identificatore della frase all'interno del libro |
-| `testo` | Testo ricostruito della frase (token separati da spazio) |
-| `n_token` | Numero di token nella frase |
-| `personaggi` | Personaggi citati nella frase, separati da `;` |
-
----
-
-## Estrazione dei personaggi
-
-I personaggi vengono identificati automaticamente come **span di token `PROPN` consecutivi** con almeno 3 occorrenze nel testo. Per ogni libro vengono selezionati i 30 più frequenti.
-
-Per ogni personaggio vengono registrati:
-- **nome** — forma canonica (la più frequente nel testo)
-- **occorrenze** — numero totale di menzioni
-- **ruoli** — distribuzione dei ruoli sintattici (`nsubj`, `obj`, `nmod`, …)
-
-Ogni token che fa parte di uno span riconosciuto come personaggio riceve il campo `personaggio` con il nome canonico.
+| Column | Description |
+|--------|-------------|
+| `id_libro` | Numeric book identifier |
+| `titolo_libro` | Novel title |
+| `autore` | Author name |
+| `anno` | Publication year |
+| `id_frase` | Sentence identifier within the book |
+| `testo` | Reconstructed sentence text (tokens joined by space) |
+| `n_token` | Number of tokens in the sentence |
+| `personaggi` | Characters mentioned in the sentence, separated by `;` |
 
 ---
 
-## Aggiungere nuovi libri
+## Character extraction
 
-1. Aggiungere il file `.conllu` allo zip — viene scoperto automaticamente.
-2. Se l'autore è nuovo, aggiungere una riga in `build_dataset/config.py`:
+Characters are identified automatically as **spans of consecutive `PROPN` tokens** with at least 3 occurrences in the text. The top 30 most frequent characters are selected per book.
+
+For each character the following are recorded:
+- **nome** — canonical form (the most frequent form in the text)
+- **occorrenze** — total number of mentions
+- **ruoli** — distribution of syntactic roles (`nsubj`, `obj`, `nmod`, …)
+
+Every token belonging to a recognised character span receives the `personaggio` field with the canonical name.
+
+---
+
+## Adding new books
+
+1. Add the `.conllu` file to the zip — it is discovered automatically.
+2. If the author is new, add an entry in `build_dataset/config.py`:
    ```python
    AUTHOR_NAMES["SURNAME"] = "First Last"
    ```
-3. Se il titolo auto-generato è errato, aggiungere una voce in `OVERRIDES`:
+3. If the auto-generated title is wrong, add an entry in `OVERRIDES`:
    ```python
-   OVERRIDES["SURNAME_TITLERAW"] = {"titolo_libro": "Titolo Corretto", "anno": 1950}
+   OVERRIDES["SURNAME_TITLERAW"] = {"titolo_libro": "Correct Title", "anno": 1950}
    ```
-4. Rieseguire `python3 main.py`.
+4. Re-run `python3 main.py`.
 
 ---
 
-## Formato sorgente: CoNLL-U
+## Source format: CoNLL-U
 
-I file sorgente seguono il formato [CoNLL-U](https://universaldependencies.org/format.html) con 10 colonne tab-separate:
+Source files follow the [CoNLL-U](https://universaldependencies.org/format.html) format with 10 tab-separated columns:
 
 ```
 ID  FORM  LEMMA  UPOS  XPOS  FEATS  HEAD  DEPREL  DEPS  MISC
 ```
 
-Il campo `MISC` contiene `start_char` e `end_char` per il mapping ai caratteri del testo originale.
+The `MISC` field contains `start_char` and `end_char` for mapping back to character offsets in the original text.

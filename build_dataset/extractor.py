@@ -4,7 +4,7 @@ from .models import Personaggio, Sentence, Token
 
 
 class CharacterExtractor:
-    """Identifica personaggi da span di PROPN consecutivi e annota i token."""
+    """Identifies characters from consecutive PROPN spans and annotates tokens."""
 
     def __init__(self, top_n: int = 30, min_freq: int = 3):
         self.top_n    = top_n
@@ -36,7 +36,7 @@ class CharacterExtractor:
         ]
 
     def annotate(self, sentences: list[Sentence], personaggi: list[Personaggio]) -> None:
-        """Scrive Token.personaggio in-place per ogni token che appartiene a un personaggio noto."""
+        """Sets Token.personaggio in-place for every token belonging to a known character."""
         name_map = {p.nome.lower(): p.nome for p in personaggi}
         for sent in sentences:
             i = 0

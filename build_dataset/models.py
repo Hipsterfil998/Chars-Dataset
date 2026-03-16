@@ -8,7 +8,7 @@ class Token:
     lemma:       str
     upos:        str
     xpos:        str
-    feats:       str          # "Key=Val|Key=Val" oppure ""
+    feats:       str          # "Key=Val|Key=Val" or ""
     head:        int
     deprel:      str
     start_char:  int | None
@@ -27,7 +27,7 @@ class Sentence:
 
     @property
     def personaggi_presenti(self) -> list[str]:
-        """Personaggi unici citati nella frase, in ordine di comparsa."""
+        """Unique characters mentioned in the sentence, in order of appearance."""
         return list(dict.fromkeys(t.personaggio for t in self.token if t.personaggio))
 
 
