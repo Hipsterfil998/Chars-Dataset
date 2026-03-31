@@ -12,7 +12,22 @@ A linguistic dataset of English-language novels in CoNLL-U format, converted to 
 
 ```
 charsdataset/
-├── main.py                     # Entrypoint
+├── app.py                      # Flask web viewer (entrypoint)
+├── db.py                       # SQLite layer: schema, JSON import, queries
+├── templates/                  # Jinja2 templates
+│   ├── base.html               # Layout with sidebar
+│   ├── books.html              # Book list
+│   ├── book.html               # Book detail + characters table
+│   ├── character.html          # Sentences for a character (paginated)
+│   ├── search.html             # Search by character name
+│   └── stats.html              # Statistics with Chart.js charts
+├── static/
+│   └── app.js                  # Chart.js initialisation (stats page)
+├── tests/
+│   ├── conftest.py             # Shared pytest fixtures
+│   ├── test_db.py              # Unit tests for db.py
+│   └── test_app.py             # Integration tests for Flask routes
+├── main.py                     # Dataset build entrypoint
 ├── build_dataset/              # Build package
 │   ├── __init__.py
 │   ├── config.py               # Paths, author lookup, title overrides
@@ -27,7 +42,34 @@ charsdataset/
 
 ---
 
-## Usage
+## Web viewer
+
+A local Flask app to browse the dataset without opening raw files.
+
+### Setup
+
+```bash
+pip install -r requirements.txt
+python app.py
+```
+
+Then open **http://localhost:5000**.
+
+On first run `dataset.db` is created automatically from `dataset.json`. To rebuild after adding new books, delete `dataset.db` and relaunch.
+
+### Features
+
+| Section | Description |
+|---------|-------------|
+| **Books** | List of all books with author, year, sentence/token counts and number of characters |
+| **Book detail** | Characters table with total occurrences and dominant syntactic role; link to sentences |
+| **Character sentences** | Paginated sentences where the character appears, token highlighted; filterable by syntactic role |
+| **Search** | Full-text search by character name (partial match); filterable by book |
+| **Statistics** | Interactive bar charts: occurrences per character + role distribution (click a bar to switch character) |
+
+---
+
+## Building the dataset
 
 ```bash
 python3 main.py
@@ -45,37 +87,37 @@ Hierarchical structure: **books → sentences → tokens**.
 
 ```json
 {
-  "books": [
+  "libri": [
     {
-      "book_id":     1,
-      "title":       "Mrs Dalloway",
-      "author":      "Virginia Woolf",
-      "year":        1925,
-      "n_sentences": 3533,
-      "n_tokens":    78450,
-      "characters": [
+      "id_libro":   1,
+      "titolo_libro": "The Third Life of Grange Copeland",
+      "autore":     "Alice Walker",
+      "anno":       1970,
+      "n_frasi":    4951,
+      "n_token":    96304,
+      "personaggi": [
         {
-          "name":        "Clarissa",
-          "occurrences": 156,
-          "roles":       { "nsubj": 45, "obj": 12 }
+          "nome":        "Brownfield",
+          "occorrenze":  469,
+          "ruoli":       { "nsubj": 291, "obl": 46 }
         }
       ],
-      "sentences": [
+      "frasi": [
         {
-          "sentence_id": 1,
+          "id_frase": 1,
           "token": [
             {
-              "token_id":   1,
-              "form":       "Mrs.",
-              "lemma":      "Mrs.",
-              "upos":       "PROPN",
-              "xpos":       "NNP",
-              "feats":      "Number=Sing",
-              "head":       13,
-              "deprel":     "nsubj",
+              "id_token":   1,
+              "form":       "The",
+              "lemma":      "the",
+              "upos":       "DET",
+              "xpos":       "DT",
+              "feats":      "Definite=Def|PronType=Art",
+              "head":       3,
+              "deprel":     "det",
               "start_char": 0,
-              "end_char":   4,
-              "character":  null
+              "end_char":   3,
+              "personaggio": null
             }
           ]
         }
@@ -89,7 +131,7 @@ Hierarchical structure: **books → sentences → tokens**.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `token_id` | int | Token index within the sentence (starting from 1) |
+| `id_token` | int | Token index within the sentence (starting from 1) |
 | `form` | str | Original token form |
 | `lemma` | str | Lemma |
 | `upos` | str | Universal POS tag (UD tagset) |
@@ -99,7 +141,7 @@ Hierarchical structure: **books → sentences → tokens**.
 | `deprel` | str | Dependency relation |
 | `start_char` | int\|null | Start character offset in the original text |
 | `end_char` | int\|null | End character offset in the original text |
-| `character` | str\|null | Canonical character name, if the token belongs to a recognised span |
+| `personaggio` | str\|null | Canonical character name, if the token belongs to a recognised span |
 
 ### dataset.csv
 
@@ -123,11 +165,11 @@ One row per sentence, flattened from the JSON.
 Characters are identified automatically as **spans of consecutive `PROPN` tokens** with at least 3 occurrences in the text. The top 30 most frequent characters are selected per book.
 
 For each character the following are recorded:
-- **name** — canonical form (the most frequent form in the text)
-- **occurrences** — total number of mentions
-- **roles** — distribution of syntactic roles (`nsubj`, `obj`, `nmod`, …)
+- **nome** — canonical form (the most frequent form in the text)
+- **occorrenze** — total number of mentions
+- **ruoli** — distribution of syntactic roles (`nsubj`, `obj`, `nmod`, …)
 
-Every token belonging to a recognised character span receives the `character` field with the canonical name.
+Every token belonging to a recognised character span receives the `personaggio` field with the canonical name.
 
 ---
 
@@ -142,7 +184,8 @@ Every token belonging to a recognised character span receives the `character` fi
    ```python
    OVERRIDES["SURNAME_TITLERAW"] = {"title": "Correct Title", "year": 1950}
    ```
-4. Re-run `python3 main.py`.
+4. Re-run `python3 main.py` to rebuild `dataset.json`.
+5. Delete `dataset.db` and relaunch `python app.py` to rebuild the viewer database.
 
 ---
 
