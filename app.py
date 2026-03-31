@@ -88,13 +88,21 @@ def create_app(conn: sqlite3.Connection) -> Flask:
         book_id_str = request.args.get("book_id", "")
         book_id = int(book_id_str) if book_id_str.isdigit() else (all_books[0]["id"] if all_books else None)
         book = database.get_book(conn, book_id) if book_id else None
-        char_stats = database.get_stats_for_book(conn, book_id) if book_id else []
+        char_stats_rows = database.get_stats_for_book(conn, book_id) if book_id else []
+        # Convert sqlite3.Row objects to dicts for JSON serialization
+        char_stats = [dict(c) for c in char_stats_rows]
+        # Ruoli per ogni personaggio (dict nome → lista {role, count})
+        roles_by_char = {}
+        for c in char_stats:
+            roles = database.get_roles_for_character(conn, book_id, c["name"])
+            roles_by_char[c["name"]] = [{"role": r["role"], "count": r["count"]} for r in roles]
         return render_template(
             "stats.html",
             all_books=all_books,
             book=book,
             book_id=book_id,
             char_stats=char_stats,
+            roles_by_char=roles_by_char,
         )
 
     @app.context_processor

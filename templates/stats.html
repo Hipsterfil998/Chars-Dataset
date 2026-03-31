@@ -1,1 +1,39 @@
-{% extends "base.html" %}{% block content %}{% if book %}{{ book.title }}{% endif %}{% endblock %}
+{% extends "base.html" %}
+{% block title %}Statistiche — Dataset Viewer{% endblock %}
+{% block content %}
+<h1>Statistiche</h1>
+
+<form method="get" class="form-row" style="margin-bottom:24px">
+  <select name="book_id" onchange="this.form.submit()">
+    {% for b in all_books %}
+    <option value="{{ b.id }}" {% if book_id == b.id %}selected{% endif %}>{{ b.title }}</option>
+    {% endfor %}
+  </select>
+</form>
+
+{% if book %}
+<p class="subtitle">{{ book.title }} · {{ book.author }}</p>
+
+<div class="chart-container">
+  <h2>Occorrenze per personaggio</h2>
+  <canvas id="chartOccurrences" height="80"></canvas>
+</div>
+
+<div class="chart-container">
+  <h2>Distribuzione ruoli — <span id="charNameLabel">{{ char_stats[0].name if char_stats else '' }}</span></h2>
+  <p class="subtitle">Clicca una barra del grafico sopra per vedere i ruoli del personaggio</p>
+  <canvas id="chartRoles" height="80"></canvas>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if book and char_stats %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script>
+  const charStats = {{ char_stats | tojson }};
+  const rolesByChar = {{ roles_by_char | tojson }};
+</script>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+{% endif %}
+{% endblock %}
