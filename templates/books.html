@@ -1,1 +1,30 @@
-{% extends "base.html" %}{% block content %}{% for b in books %}{{ b.title }}{% endfor %}{% endblock %}
+{% extends "base.html" %}
+{% block title %}Libri — Dataset Viewer{% endblock %}
+{% block content %}
+<h1>Tutti i libri</h1>
+<p class="subtitle">{{ books|length }} libri nel dataset</p>
+<table>
+  <thead>
+    <tr>
+      <th>Titolo</th>
+      <th>Autore</th>
+      <th>Anno</th>
+      <th>Frasi</th>
+      <th>Token</th>
+      <th>Personaggi</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for b in books %}
+    <tr>
+      <td><a href="{{ url_for('book_detail', book_id=b.id) }}">{{ b.title }}</a></td>
+      <td>{{ b.author }}</td>
+      <td>{{ b.year or '—' }}</td>
+      <td>{{ b.n_sentences }}</td>
+      <td>{{ b.n_tokens }}</td>
+      <td>{{ b.n_characters }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
