@@ -1,1 +1,30 @@
-{% extends "base.html" %}{% block content %}{% for c in characters %}{{ c.name }}{% endfor %}{% endblock %}
+{% extends "base.html" %}
+{% block title %}{{ book.title }} — Dataset Viewer{% endblock %}
+{% block content %}
+<h1>{{ book.title }}</h1>
+<p class="subtitle">{{ book.author }}{% if book.year %} · {{ book.year }}{% endif %} · {{ book.n_sentences }} frasi · {{ book.n_tokens }} token</p>
+
+<h2>Personaggi</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Nome</th>
+      <th>Occorrenze</th>
+      <th>Ruolo principale</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for c in characters %}
+    <tr>
+      <td>{{ c.name }}</td>
+      <td>{{ c.occurrences }}</td>
+      <td><span class="badge role">{{ c.top_role or '—' }}</span></td>
+      <td>
+        <a href="{{ url_for('character_sentences', book_id=book.id, name=c.name) }}">→ frasi</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
