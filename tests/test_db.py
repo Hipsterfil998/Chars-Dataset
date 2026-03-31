@@ -2,6 +2,11 @@ import sqlite3
 import pytest
 import json
 from db import init_db
+from db import (
+    get_all_books, get_book, get_characters,
+    get_sentences_for_character, search_character, get_stats_for_book,
+    get_all_roles_for_book
+)
 
 
 SAMPLE_JSON = {
@@ -85,3 +90,72 @@ def test_import_json(tmp_path):
     ).fetchone()
     assert row["character"] == "Alice"
     conn.close()
+
+
+def test_get_all_books(conn):
+    books = get_all_books(conn)
+    assert len(books) == 1
+    assert books[0]["title"] == "Test Book"
+    assert books[0]["n_characters"] == 2
+
+
+def test_get_book(conn):
+    book = get_book(conn, 1)
+    assert book["title"] == "Test Book"
+    assert book["author"] == "Test Author"
+
+
+def test_get_book_missing(conn):
+    assert get_book(conn, 999) is None
+
+
+def test_get_characters(conn):
+    chars = get_characters(conn, book_id=1)
+    assert len(chars) == 2
+    assert chars[0]["name"] == "Alice"
+    assert chars[0]["occurrences"] == 2
+    assert chars[0]["top_role"] == "nsubj"
+
+
+def test_get_sentences_for_character_no_filter(conn):
+    results = get_sentences_for_character(conn, book_id=1, name="Alice", role=None, page=1, per_page=20)
+    assert results["total"] == 1
+    assert len(results["sentences"]) == 1
+    sent = results["sentences"][0]
+    assert sent["sentence_id"] == 1
+    assert any(t["form"] == "Alice" for t in sent["tokens"])
+
+
+def test_get_sentences_for_character_role_filter(conn):
+    results = get_sentences_for_character(conn, book_id=1, name="Alice", role="nsubj", page=1, per_page=20)
+    assert results["total"] == 1
+
+    results_no = get_sentences_for_character(conn, book_id=1, name="Alice", role="obj", page=1, per_page=20)
+    assert results_no["total"] == 0
+
+
+def test_search_character(conn):
+    results = search_character(conn, query="ali", book_id=None, role=None, page=1, per_page=20)
+    assert results["total"] == 1
+    assert results["sentences"][0]["character_name"] == "Alice"
+
+
+def test_search_character_book_filter(conn):
+    results = search_character(conn, query="ali", book_id=1, role=None, page=1, per_page=20)
+    assert results["total"] == 1
+    results_wrong_book = search_character(conn, query="ali", book_id=99, role=None, page=1, per_page=20)
+    assert results_wrong_book["total"] == 0
+
+
+def test_get_stats_for_book(conn):
+    stats = get_stats_for_book(conn, book_id=1)
+    assert len(stats) == 2
+    assert stats[0]["name"] == "Alice"
+    assert stats[0]["occurrences"] == 2
+
+
+def test_get_all_roles_for_book(conn):
+    roles = get_all_roles_for_book(conn, book_id=1)
+    role_names = [r["role"] for r in roles]
+    assert "nsubj" in role_names
+    assert "obj" in role_names
