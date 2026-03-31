@@ -57,3 +57,49 @@ def init_db(db_path: str = DB_PATH) -> sqlite3.Connection:
     """)
     conn.commit()
     return conn
+
+
+def import_json(conn: sqlite3.Connection, json_path: str = JSON_PATH) -> None:
+    with open(json_path, encoding="utf-8") as f:
+        data = json.load(f)
+
+    for book in data["libri"]:
+        conn.execute(
+            "INSERT OR REPLACE INTO books (id, title, author, year, n_sentences, n_tokens) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            (book["id_libro"], book["titolo_libro"], book["autore"],
+             book["anno"], book["n_frasi"], book["n_token"])
+        )
+        book_id = book["id_libro"]
+
+        for char in book.get("personaggi", []):
+            cur = conn.execute(
+                "INSERT INTO characters (book_id, name, occurrences) VALUES (?, ?, ?)",
+                (book_id, char["nome"], char["occorrenze"])
+            )
+            char_id = cur.lastrowid
+            for role, count in char.get("ruoli", {}).items():
+                conn.execute(
+                    "INSERT INTO roles (character_id, role, count) VALUES (?, ?, ?)",
+                    (char_id, role, count)
+                )
+
+        for sentence in book.get("frasi", []):
+            cur = conn.execute(
+                "INSERT INTO sentences (book_id, sentence_id) VALUES (?, ?)",
+                (book_id, sentence["id_frase"])
+            )
+            sent_row_id = cur.lastrowid
+            for tok in sentence.get("token", []):
+                conn.execute(
+                    "INSERT INTO tokens "
+                    "(sentence_id, form, lemma, upos, xpos, feats, head, deprel, "
+                    "start_char, end_char, character) "
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    (sent_row_id, tok["form"], tok["lemma"], tok["upos"],
+                     tok["xpos"], tok.get("feats", ""), tok["head"],
+                     tok["deprel"], tok.get("start_char"), tok.get("end_char"),
+                     tok.get("personaggio"))
+                )
+
+    conn.commit()
