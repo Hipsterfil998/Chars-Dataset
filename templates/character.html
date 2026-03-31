@@ -1,0 +1,1 @@
+{% extends "base.html" %}{% block content %}{{ name }}{% for s in sentences %}{% for t in s.tokens %}{{ t.form }} {% endfor %}{% endfor %}{% endblock %}
