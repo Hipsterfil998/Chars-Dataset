@@ -123,17 +123,16 @@ def get_book(conn: sqlite3.Connection, book_id: int) -> sqlite3.Row | None:
 
 
 def get_characters(conn: sqlite3.Connection, book_id: int) -> list[sqlite3.Row]:
-    rows = conn.execute("""
+    return conn.execute("""
         SELECT c.id, c.name, c.occurrences,
-               r.role AS top_role
+               (SELECT r.role FROM roles r
+                WHERE r.character_id = c.id
+                ORDER BY r.count DESC
+                LIMIT 1) AS top_role
         FROM characters c
-        LEFT JOIN roles r ON r.character_id = c.id
         WHERE c.book_id = ?
-        GROUP BY c.id
-        HAVING r.count = MAX(r.count)
         ORDER BY c.occurrences DESC
     """, (book_id,)).fetchall()
-    return rows
 
 
 def get_sentences_for_character(
@@ -189,29 +188,38 @@ def search_character(
     per_page: int,
 ) -> dict:
     """Cerca frasi in cui appare un personaggio il cui nome contiene `query`."""
-    base = """
-        FROM sentences s
-        JOIN tokens t ON t.sentence_id = s.id
-        JOIN books b ON b.id = s.book_id
-        WHERE t.character LIKE ?
-    """
+    where = "WHERE t.character LIKE ?"
     params: list = [f"%{query}%"]
 
     if book_id:
-        base += " AND s.book_id = ?"
+        where += " AND s.book_id = ?"
         params.append(book_id)
     if role:
-        base += " AND t.deprel = ?"
+        where += " AND t.deprel = ?"
         params.append(role)
 
-    total = conn.execute("SELECT COUNT(DISTINCT s.id) " + base, params).fetchone()[0]
+    count_sql = f"""
+        SELECT COUNT(DISTINCT s.id)
+        FROM sentences s
+        JOIN tokens t ON t.sentence_id = s.id
+        {where}
+    """
+    total = conn.execute(count_sql, params).fetchone()[0]
 
     offset = (page - 1) * per_page
-    sent_rows = conn.execute(
-        "SELECT DISTINCT s.id, s.sentence_id, b.title AS book_title, t.character AS character_name, t.deprel AS role " + base +
-        " ORDER BY s.id LIMIT ? OFFSET ?",
-        params + [per_page, offset]
-    ).fetchall()
+    rows_sql = f"""
+        SELECT s.id, s.sentence_id, b.title AS book_title,
+               MIN(t.character) AS character_name,
+               MIN(t.deprel)    AS role
+        FROM sentences s
+        JOIN tokens t ON t.sentence_id = s.id
+        JOIN books  b ON b.id = s.book_id
+        {where}
+        GROUP BY s.id
+        ORDER BY s.id
+        LIMIT ? OFFSET ?
+    """
+    sent_rows = conn.execute(rows_sql, params + [per_page, offset]).fetchall()
 
     sentences = []
     for row in sent_rows:
@@ -221,10 +229,10 @@ def search_character(
         ).fetchall()
         sentences.append({
             "sentence_id": row["sentence_id"],
-            "book_title": row["book_title"],
+            "book_title":  row["book_title"],
             "character_name": row["character_name"],
-            "role": row["role"],
-            "tokens": [dict(t) for t in tokens],
+            "role":        row["role"],
+            "tokens":      [dict(t) for t in tokens],
         })
 
     return {"total": total, "sentences": sentences}

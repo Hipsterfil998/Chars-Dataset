@@ -159,3 +159,11 @@ def test_get_all_roles_for_book(conn):
     role_names = [r["role"] for r in roles]
     assert "nsubj" in role_names
     assert "obj" in role_names
+
+
+def test_get_roles_for_character(conn):
+    from db import get_roles_for_character
+    roles = get_roles_for_character(conn, book_id=1, name="Alice")
+    assert len(roles) == 1
+    assert roles[0]["role"] == "nsubj"
+    assert roles[0]["count"] == 2
