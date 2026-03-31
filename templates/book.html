@@ -2,29 +2,31 @@
 {% block title %}{{ book.title }} — Dataset Viewer{% endblock %}
 {% block content %}
 <h1>{{ book.title }}</h1>
-<p class="subtitle">{{ book.author }}{% if book.year %} · {{ book.year }}{% endif %} · {{ book.n_sentences }} frasi · {{ book.n_tokens }} token</p>
+<p class="subtitle">{{ book.author }}{% if book.year %} · {{ book.year }}{% endif %} · {{ book.n_sentences }} sentences · {{ book.n_tokens }} tokens</p>
 
-<h2>Personaggi</h2>
-<table>
-  <thead>
-    <tr>
-      <th>Nome</th>
-      <th>Occorrenze</th>
-      <th>Ruolo principale</th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for c in characters %}
-    <tr>
-      <td>{{ c.name }}</td>
-      <td>{{ c.occurrences }}</td>
-      <td><span class="badge role">{{ c.top_role or '—' }}</span></td>
-      <td>
-        <a href="{{ url_for('character_sentences', book_id=book.id, name=c.name) }}">→ frasi</a>
-      </td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+<h2>Characters</h2>
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Occurrences</th>
+        <th>Primary Role</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in characters %}
+      <tr>
+        <td>{{ c.name }}</td>
+        <td>{{ c.occurrences }}</td>
+        <td><span class="badge role">{{ c.top_role or '—' }}</span></td>
+        <td>
+          <a href="{{ url_for('character_sentences', book_id=book.id, name=c.name) }}">→ sentences</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 {% endblock %}

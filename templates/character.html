@@ -4,24 +4,26 @@
 <h1>{{ name }}</h1>
 <p class="subtitle">
   <a href="{{ url_for('book_detail', book_id=book.id) }}">{{ book.title }}</a>
-  · {{ total }} frase{{ 'i' if total != 1 else '' }}
+  · {{ total }} sentence{{ 's' if total != 1 else '' }}
 </p>
 
 <form method="get" class="form-row">
   <select name="role" onchange="this.form.submit()">
-    <option value="">Tutti i ruoli</option>
+    <option value="">All roles</option>
     {% for r in all_roles %}
     <option value="{{ r.role }}" {% if role == r.role %}selected{% endif %}>
       {{ r.role }} ({{ r.count }})
     </option>
     {% endfor %}
   </select>
-  {% if role %}<a href="{{ url_for('character_sentences', book_id=book.id, name=name) }}">✕ rimuovi filtro</a>{% endif %}
+  {% if role %}<a class="remove-filter" href="{{ url_for('character_sentences', book_id=book.id, name=name) }}">✕ clear filter</a>{% endif %}
 </form>
 
 {% for s in sentences %}
 <div class="sentence-card">
-  <div class="meta">Frase #{{ s.sentence_id }}</div>
+  <div class="meta">
+    <span>Sentence #{{ s.sentence_id }}</span>
+  </div>
   {% for tok in s.tokens %}
     {%- if tok.character == name -%}
       <span class="char-token" title="{{ tok.deprel }}">{{ tok.form }}</span>
@@ -32,13 +34,13 @@
   {% endfor %}
 </div>
 {% else %}
-<p class="subtitle">Nessuna frase trovata.</p>
+<p class="subtitle">No sentences found.</p>
 {% endfor %}
 
 {% if total_pages > 1 %}
 <div class="pagination">
   {% if page > 1 %}
-  <a href="?page={{ page - 1 }}{% if role %}&role={{ role }}{% endif %}">‹ Prec</a>
+  <a href="?page={{ page - 1 }}{% if role %}&role={{ role }}{% endif %}">‹ Prev</a>
   {% endif %}
   {% for p in range(1, total_pages + 1) %}
   {% if p == page %}
@@ -50,7 +52,7 @@
   {% endif %}
   {% endfor %}
   {% if page < total_pages %}
-  <a href="?page={{ page + 1 }}{% if role %}&role={{ role }}{% endif %}">Succ ›</a>
+  <a href="?page={{ page + 1 }}{% if role %}&role={{ role }}{% endif %}">Next ›</a>
   {% endif %}
 </div>
 {% endif %}

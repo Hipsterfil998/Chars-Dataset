@@ -6,3 +6,5 @@ __pycache__/
 *.pyc
 dataset.db
 .superpowers/
+dataset.db-shm
+dataset.db-wal

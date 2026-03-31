@@ -1,30 +1,32 @@
 {% extends "base.html" %}
-{% block title %}Libri — Dataset Viewer{% endblock %}
+{% block title %}Books — Dataset Viewer{% endblock %}
 {% block content %}
-<h1>Tutti i libri</h1>
-<p class="subtitle">{{ books|length }} libri nel dataset</p>
-<table>
-  <thead>
-    <tr>
-      <th>Titolo</th>
-      <th>Autore</th>
-      <th>Anno</th>
-      <th>Frasi</th>
-      <th>Token</th>
-      <th>Personaggi</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for b in books %}
-    <tr>
-      <td><a href="{{ url_for('book_detail', book_id=b.id) }}">{{ b.title }}</a></td>
-      <td>{{ b.author }}</td>
-      <td>{{ b.year or '—' }}</td>
-      <td>{{ b.n_sentences }}</td>
-      <td>{{ b.n_tokens }}</td>
-      <td>{{ b.n_characters }}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+<h1>All Books</h1>
+<p class="subtitle">{{ books|length }} book{{ 's' if books|length != 1 else '' }} in the dataset</p>
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Author</th>
+        <th>Year</th>
+        <th>Sentences</th>
+        <th>Tokens</th>
+        <th>Characters</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for b in books %}
+      <tr>
+        <td><a href="{{ url_for('book_detail', book_id=b.id) }}">{{ b.title }}</a></td>
+        <td>{{ b.author }}</td>
+        <td>{{ b.year or '—' }}</td>
+        <td>{{ b.n_sentences }}</td>
+        <td>{{ b.n_tokens }}</td>
+        <td>{{ b.n_characters }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 {% endblock %}

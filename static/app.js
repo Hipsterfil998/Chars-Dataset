@@ -12,7 +12,7 @@ const occChart = new Chart(ctxOcc, {
   data: {
     labels: occLabels,
     datasets: [{
-      label: "Occorrenze",
+      label: "Occurrences",
       data: occData,
       backgroundColor: COLORS,
       borderRadius: 4,
@@ -54,7 +54,7 @@ function showRoles(name) {
       data: {
         labels,
         datasets: [{
-          label: "Conteggio",
+          label: "Count",
           data,
           backgroundColor: "#818cf8",
           borderRadius: 4,
@@ -72,5 +72,4 @@ function showRoles(name) {
   }
 }
 
-// Mostra il primo personaggio di default
 if (occLabels.length) showRoles(occLabels[0]);

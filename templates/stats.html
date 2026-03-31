@@ -1,9 +1,9 @@
 {% extends "base.html" %}
-{% block title %}Statistiche — Dataset Viewer{% endblock %}
+{% block title %}Statistics — Dataset Viewer{% endblock %}
 {% block content %}
-<h1>Statistiche</h1>
+<h1>Statistics</h1>
 
-<form method="get" class="form-row" style="margin-bottom:24px">
+<form method="get" class="form-row" style="margin-bottom:28px">
   <select name="book_id" onchange="this.form.submit()">
     {% for b in all_books %}
     <option value="{{ b.id }}" {% if book_id == b.id %}selected{% endif %}>{{ b.title }}</option>
@@ -15,13 +15,13 @@
 <p class="subtitle">{{ book.title }} · {{ book.author }}</p>
 
 <div class="chart-container">
-  <h2>Occorrenze per personaggio</h2>
+  <h2>Occurrences per character</h2>
   <canvas id="chartOccurrences" height="80"></canvas>
 </div>
 
 <div class="chart-container">
-  <h2>Distribuzione ruoli — <span id="charNameLabel">{{ char_stats[0].name if char_stats else '' }}</span></h2>
-  <p class="subtitle">Clicca una barra del grafico sopra per vedere i ruoli del personaggio</p>
+  <h2>Role distribution — <span id="charNameLabel">{{ char_stats[0].name if char_stats else '' }}</span></h2>
+  <p class="subtitle" style="margin-bottom:16px">Click a bar above to see that character's role breakdown</p>
   <canvas id="chartRoles" height="80"></canvas>
 </div>
 {% endif %}
