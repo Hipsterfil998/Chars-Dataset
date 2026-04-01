@@ -87,27 +87,27 @@ Hierarchical structure: **books → sentences → tokens**.
 
 ```json
 {
-  "libri": [
+  "books": [
     {
-      "id_libro":   1,
-      "titolo_libro": "The Third Life of Grange Copeland",
-      "autore":     "Alice Walker",
-      "anno":       1970,
-      "n_frasi":    4951,
-      "n_token":    96304,
-      "personaggi": [
+      "book_id":    1,
+      "book_title": "The Third Life of Grange Copeland",
+      "author":     "Alice Walker",
+      "year":       1970,
+      "n_sentences": 4951,
+      "n_tokens":   96304,
+      "characters": [
         {
-          "nome":        "Brownfield",
-          "occorrenze":  469,
-          "ruoli":       { "nsubj": 291, "obl": 46 }
+          "name":        "Brownfield",
+          "occurrences": 469,
+          "roles":       { "nsubj": 291, "obl": 46 }
         }
       ],
-      "frasi": [
+      "sentences": [
         {
-          "id_frase": 1,
-          "token": [
+          "sentence_id": 1,
+          "tokens": [
             {
-              "id_token":   1,
+              "token_id":   1,
               "form":       "The",
               "lemma":      "the",
               "upos":       "DET",
@@ -117,7 +117,7 @@ Hierarchical structure: **books → sentences → tokens**.
               "deprel":     "det",
               "start_char": 0,
               "end_char":   3,
-              "personaggio": null
+              "character":  null
             }
           ]
         }
@@ -131,7 +131,7 @@ Hierarchical structure: **books → sentences → tokens**.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `id_token` | int | Token index within the sentence (starting from 1) |
+| `token_id` | int | Token index within the sentence (starting from 1) |
 | `form` | str | Original token form |
 | `lemma` | str | Lemma |
 | `upos` | str | Universal POS tag (UD tagset) |
@@ -141,7 +141,7 @@ Hierarchical structure: **books → sentences → tokens**.
 | `deprel` | str | Dependency relation |
 | `start_char` | int\|null | Start character offset in the original text |
 | `end_char` | int\|null | End character offset in the original text |
-| `personaggio` | str\|null | Canonical character name, if the token belongs to a recognised span |
+| `character` | str\|null | Canonical character name, if the token belongs to a recognised span |
 
 ### dataset.csv
 
@@ -165,11 +165,11 @@ One row per sentence, flattened from the JSON.
 Characters are identified automatically as **spans of consecutive `PROPN` tokens** with at least 3 occurrences in the text. The top 30 most frequent characters are selected per book.
 
 For each character the following are recorded:
-- **nome** — canonical form (the most frequent form in the text)
-- **occorrenze** — total number of mentions
-- **ruoli** — distribution of syntactic roles (`nsubj`, `obj`, `nmod`, …)
+- **name** — canonical form (the most frequent form in the text)
+- **occurrences** — total number of mentions
+- **roles** — distribution of syntactic roles (`nsubj`, `obj`, `nmod`, …)
 
-Every token belonging to a recognised character span receives the `personaggio` field with the canonical name.
+Every token belonging to a recognised character span receives the `character` field with the canonical name.
 
 ---
 
